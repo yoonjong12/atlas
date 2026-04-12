@@ -1,0 +1,11 @@
+{
+  "name": "atlassian-extended",
+  "owner": { "name": "yoonjong12" },
+  "plugins": [
+    {
+      "name": "atlassian-extended",
+      "source": "./",
+      "description": "Unified Atlassian access layer — Jira issues, Bitbucket pipelines, and PR management in one plugin."
+    }
+  ]
+}
