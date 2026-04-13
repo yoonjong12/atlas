@@ -13,14 +13,82 @@ Configure credentials for Bitbucket REST API and Jira MCP access, then verify co
 
 Two credential sets are required:
 
-| Service | Credential | Purpose |
-|---------|-----------|---------|
-| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | Pipeline, PR operations |
-| Jira MCP | Atlassian OAuth (via MCP server) | Issue operations |
+| Service | Credential | Location | Purpose |
+|---------|-----------|----------|---------|
+| Jira MCP | `JIRA_USERNAME` + `JIRA_API_TOKEN` | `~/.claude.json` → `mcpServers.atlassian` | Issue operations via mcp-atlassian |
+| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | Shell environment variables | Pipeline, PR operations via curl |
 
 ## Process
 
-### Step 1: Check Bitbucket Credentials
+### Step 1: Check Jira MCP
+
+Verify `~/.claude.json` has the atlassian MCP server configured:
+
+```bash
+python3 -c "
+import json
+with open('$HOME/.claude.json') as f:
+    d = json.load(f)
+mcp = d.get('mcpServers', {}).get('atlassian', {})
+if mcp:
+    env = mcp.get('env', {})
+    print(f'JIRA_URL: {env.get(\"JIRA_URL\", \"(not set)\")}')
+    print(f'JIRA_USERNAME: {env.get(\"JIRA_USERNAME\", \"(not set)\")}')
+    print(f'JIRA_API_TOKEN: {\"(set)\" if env.get(\"JIRA_API_TOKEN\") else \"(not set)\"}')
+else:
+    print('atlassian MCP server not configured')
+"
+```
+
+If missing, guide the user:
+
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Create an API token
+3. Agent writes the config to `~/.claude.json`:
+
+```bash
+python3 -c "
+import json
+with open('$HOME/.claude.json') as f:
+    d = json.load(f)
+d.setdefault('mcpServers', {})['atlassian'] = {
+    'command': 'uvx',
+    'args': ['mcp-atlassian'],
+    'env': {
+        'JIRA_URL': 'https://mindai.atlassian.net',
+        'JIRA_USERNAME': '<email>',
+        'JIRA_API_TOKEN': '<token>',
+        'CONFLUENCE_URL': 'https://mindai.atlassian.net/wiki',
+        'CONFLUENCE_USERNAME': '<email>',
+        'CONFLUENCE_API_TOKEN': '<token>'
+    }
+}
+with open('$HOME/.claude.json', 'w') as f:
+    json.dump(d, f, indent=2)
+"
+```
+
+4. Restart Claude Code (`/exit` then relaunch)
+
+### Step 2: Verify Jira Connectivity
+
+After restart, test MCP connection:
+
+```
+ToolSearch({ query: "+atlassian jira_search" })
+```
+
+Then run a test query:
+
+```typescript
+jira_search({
+  jql: "project = WAO AND type = Epic ORDER BY updated DESC",
+  limit: 1,
+  fields: "summary,status"
+})
+```
+
+### Step 3: Check Bitbucket Credentials
 
 Verify environment variables are set:
 
@@ -43,9 +111,7 @@ If missing, guide the user:
    export BITBUCKET_API_TOKEN="ATBBxxxxxxxx"
    ```
 
-### Step 2: Verify Bitbucket Connectivity
-
-Test API access:
+### Step 4: Verify Bitbucket Connectivity
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}" \
@@ -57,32 +123,15 @@ curl -s -o /dev/null -w "%{http_code}" \
 - `401` → Invalid credentials
 - `403` → Missing scopes
 
-### Step 3: Verify Jira MCP
-
-Load and test the Atlassian MCP authenticate tool:
-
-```
-ToolSearch({ query: "+atlassian authenticate" })
-```
-
-Run the authenticate tool if not yet authenticated. Then verify with a test query:
-
-```
-ToolSearch({ query: "+atlassian atlassianUserInfo" })
-atlassianUserInfo({})
-```
-
-If authentication fails, the user must complete the OAuth flow in their browser when prompted by the MCP server.
-
-### Step 4: Report Status
+### Step 5: Report Status
 
 Present a summary table:
 
 ```
 | Service    | Status      | Account           |
 |------------|-------------|-------------------|
+| Jira MCP   | Connected   | user@example.com  |
 | Bitbucket  | Connected   | user@example.com  |
-| Jira MCP   | Connected   | User Name         |
 ```
 
 If any service is not connected, list the specific steps needed to fix it.

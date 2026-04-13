@@ -13,8 +13,8 @@ Search Jira for duplicate or related issues before creating new ones. Prevents d
 Load required MCP tools:
 
 ```
-ToolSearch({ query: "+atlassian searchJiraIssuesUsingJql" })
-ToolSearch({ query: "+atlassian getJiraIssue" })
+ToolSearch({ query: "+atlassian jira_search" })
+ToolSearch({ query: "+atlassian jira_get_issue" })
 ```
 
 ## Process
@@ -33,31 +33,28 @@ Run at least 3 parallel searches to maximize recall:
 
 **Error-focused** (exact match):
 ```typescript
-searchJiraIssuesUsingJql({
-  cloudId: "mindai.atlassian.net",
+jira_search({
   jql: 'project = WAO AND text ~ "\\"exact error message\\"" ORDER BY updated DESC',
-  maxResults: 5,
-  fields: ["summary", "status", "resolution", "updated"]
+  limit: 5,
+  fields: "summary,status,resolution,updated"
 })
 ```
 
 **Component-focused** (area match):
 ```typescript
-searchJiraIssuesUsingJql({
-  cloudId: "mindai.atlassian.net",
+jira_search({
   jql: 'project = WAO AND text ~ "component_name" AND type = Bug ORDER BY updated DESC',
-  maxResults: 5,
-  fields: ["summary", "status", "resolution", "updated"]
+  limit: 5,
+  fields: "summary,status,resolution,updated"
 })
 ```
 
 **Symptom-focused** (behavioral match):
 ```typescript
-searchJiraIssuesUsingJql({
-  cloudId: "mindai.atlassian.net",
+jira_search({
   jql: 'project = WAO AND text ~ "symptom keywords" ORDER BY updated DESC',
-  maxResults: 5,
-  fields: ["summary", "status", "resolution", "updated"]
+  limit: 5,
+  fields: "summary,status,resolution,updated"
 })
 ```
 
@@ -66,11 +63,9 @@ searchJiraIssuesUsingJql({
 For each candidate, fetch full details if the summary looks relevant:
 
 ```typescript
-getJiraIssue({
-  cloudId: "mindai.atlassian.net",
-  issueIdOrKey: "WAO-XXX",
-  fields: ["summary", "description", "status", "resolution", "comment"],
-  responseContentFormat: "markdown"
+jira_get_issue({
+  issue_key: "WAO-XXX",
+  fields: "summary,description,status,resolution,comment"
 })
 ```
 
@@ -98,21 +93,21 @@ Show the user:
 
 **If duplicate** — add context to existing issue:
 ```
-ToolSearch({ query: "+atlassian addCommentToJiraIssue" })
+ToolSearch({ query: "+atlassian jira_add_comment" })
 ```
 
 Add a comment with the new occurrence context, environment details, and any additional symptoms.
 
 **If new issue** — create with full context:
 ```
-ToolSearch({ query: "+atlassian createJiraIssue" })
+ToolSearch({ query: "+atlassian jira_create_issue" })
 ```
 
 Include error signature, reproduction steps, and links to any related issues found during search.
 
 **If related** — create new issue and link:
 ```
-ToolSearch({ query: "+atlassian createIssueLink" })
+ToolSearch({ query: "+atlassian jira_create_issue_link" })
 ```
 
 ## Additional Resources

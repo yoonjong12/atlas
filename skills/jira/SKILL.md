@@ -6,29 +6,25 @@ argument-hint: "<issue key, JQL query, or description>"
 
 # Jira — Issue Access Layer
 
-Read, search, create, edit, comment, and transition Jira issues via Atlassian MCP.
+Read, search, create, edit, comment, and transition Jira issues via mcp-atlassian MCP.
 
 ## Tool Discovery
 
 MCP tools are deferred. Load required tools before first use:
 
 ```
-ToolSearch({ query: "+atlassian getJiraIssue" })
-ToolSearch({ query: "+atlassian searchJiraIssuesUsingJql" })
+ToolSearch({ query: "+atlassian jira_get_issue" })
+ToolSearch({ query: "+atlassian jira_search" })
 ```
 
 Load write tools only when needed:
 
 ```
-ToolSearch({ query: "+atlassian createJiraIssue" })
-ToolSearch({ query: "+atlassian editJiraIssue" })
-ToolSearch({ query: "+atlassian addCommentToJiraIssue" })
-ToolSearch({ query: "+atlassian transitionJiraIssue" })
+ToolSearch({ query: "+atlassian jira_create_issue" })
+ToolSearch({ query: "+atlassian jira_update_issue" })
+ToolSearch({ query: "+atlassian jira_add_comment" })
+ToolSearch({ query: "+atlassian jira_transition" })
 ```
-
-## cloudId
-
-All MCP tools require `cloudId` — the Atlassian site URL (e.g., `your-org.atlassian.net`). Discover the correct value via `atlassianUserInfo({})` after authentication.
 
 ## Read Operations
 
@@ -37,11 +33,9 @@ All MCP tools require `cloudId` — the Atlassian site URL (e.g., `your-org.atla
 When the user provides an issue key (e.g., `WAO-372`):
 
 ```typescript
-getJiraIssue({
-  cloudId: "mindai.atlassian.net",
-  issueIdOrKey: "WAO-372",
-  fields: ["summary", "description", "status", "assignee", "subtasks", "parent", "priority"],
-  responseContentFormat: "markdown"
+jira_get_issue({
+  issue_key: "WAO-372",
+  fields: "summary,description,status,assignee,subtasks,parent,priority"
 })
 ```
 
@@ -52,12 +46,10 @@ Present results concisely: key, summary, status, assignee, and subtask list if a
 When the user asks to find or list issues:
 
 ```typescript
-searchJiraIssuesUsingJql({
-  cloudId: "mindai.atlassian.net",
+jira_search({
   jql: "project = WAO AND type = Story AND status != Done ORDER BY updated DESC",
-  maxResults: 10,
-  fields: ["summary", "status", "assignee"],
-  responseContentFormat: "markdown"
+  limit: 10,
+  fields: "summary,status,assignee"
 })
 ```
 
@@ -82,68 +74,63 @@ To show an issue's full context (Epic → Story → Subtask):
 ### Create Issue
 
 ```typescript
-createJiraIssue({
-  cloudId: "mindai.atlassian.net",
-  projectKey: "WAO",
-  issueTypeName: "Subtask",    // "Epic", "Story", "Subtask", "Task", "Bug"
+jira_create_issue({
+  project_key: "WAO",
+  issue_type: "Subtask",           // "Epic", "Story", "Subtask", "Task", "Bug"
   summary: "Issue title",
   description: "Description in markdown",
-  contentFormat: "markdown",
-  parent: "WAO-372"            // required for Story under Epic, Subtask under Story
+  assignee: "yoonjong@wisdomgraph.ai",
+  additional_fields: {
+    "parent": "WAO-372",           // required for Story under Epic, Subtask under Story
+    "priority": {"name": "1"},
+    "customfield_10025": "2026-04-13",  // Start date
+    "duedate": "2026-04-20"
+  }
 })
 ```
-
-**Important**: Use `"Subtask"` not `"Sub-task"` for issueTypeName.
 
 ### Edit Issue
 
 ```typescript
-editJiraIssue({
-  cloudId: "mindai.atlassian.net",
-  issueIdOrKey: "WAO-372",
-  fields: { "summary": "Updated title" },
-  contentFormat: "markdown"
+jira_update_issue({
+  issue_key: "WAO-372",
+  fields: { "summary": "Updated title" }
 })
 ```
 
 ### Add Comment
 
 ```typescript
-addCommentToJiraIssue({
-  cloudId: "mindai.atlassian.net",
-  issueIdOrKey: "WAO-372",
-  commentBody: "Comment text",
-  contentFormat: "markdown"
+jira_add_comment({
+  issue_key: "WAO-372",
+  comment: "Comment text in markdown"
 })
 ```
 
 ### Transition (Status Change)
 
-Two-step process:
+```typescript
+jira_transition({
+  issue_key: "WAO-372",
+  transition_name: "진행 중"       // or "완료", "Open", etc.
+})
+```
 
-1. Get available transitions:
-   ```typescript
-   getTransitionsForJiraIssue({
-     cloudId: "mindai.atlassian.net",
-     issueIdOrKey: "WAO-372"
-   })
-   ```
+### Link Issues
 
-2. Execute transition using the transition ID from step 1:
-   ```typescript
-   transitionJiraIssue({
-     cloudId: "mindai.atlassian.net",
-     issueIdOrKey: "WAO-372",
-     transition: { id: "31" }
-   })
-   ```
+```typescript
+jira_create_issue_link({
+  type: "Blocks",
+  inward_issue: "WAO-375",        // blocker
+  outward_issue: "WAO-376"        // blocked
+})
+```
 
 ## Token Efficiency
 
-- Request only needed fields via `fields` array
-- Use `maxResults` aggressively (5 for selection, 1 for latest)
-- Use `responseContentFormat: "markdown"` for compact output
+- Request only needed fields via `fields` (comma-separated string)
+- Use `limit` aggressively (5 for selection, 1 for latest)
 
 ## Additional Resources
 
-- **`references/jira-mcp-tools.md`** — Full tool signatures, JQL patterns, metadata tools
+- **`references/jira-mcp-tools.md`** — Full tool signatures, JQL patterns
