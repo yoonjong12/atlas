@@ -4,17 +4,13 @@ Tool reference for `sooperset/mcp-atlassian` MCP server, registered as `atlassia
 
 ## Tool Discovery
 
-All tools are deferred. Load via ToolSearch before first use:
+All tools are deferred. Load by exact name before first use:
 
 ```
-ToolSearch({ query: "+atlassian jira_get_issue" })
-ToolSearch({ query: "+atlassian jira_search" })
-ToolSearch({ query: "+atlassian jira_create_issue" })
-ToolSearch({ query: "+atlassian jira_update_issue" })
-ToolSearch({ query: "+atlassian jira_add_comment" })
-ToolSearch({ query: "+atlassian jira_transition" })
-ToolSearch({ query: "+atlassian jira_create_issue_link" })
-ToolSearch({ query: "+atlassian jira_get_user_profile" })
+ToolSearch({ query: "select:mcp__atlassian__jira_get_issue,mcp__atlassian__jira_search" })
+ToolSearch({ query: "select:mcp__atlassian__jira_create_issue,mcp__atlassian__jira_update_issue" })
+ToolSearch({ query: "select:mcp__atlassian__jira_add_comment,mcp__atlassian__jira_transition_issue,mcp__atlassian__jira_get_transitions" })
+ToolSearch({ query: "select:mcp__atlassian__jira_create_issue_link,mcp__atlassian__jira_get_user_profile" })
 ```
 
 ## Read Operations

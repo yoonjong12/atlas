@@ -10,11 +10,10 @@ Search Jira for duplicate or related issues before creating new ones. Prevents d
 
 ## Tool Discovery
 
-Load required MCP tools:
+Load required MCP tools by exact name:
 
 ```
-ToolSearch({ query: "+atlassian jira_search" })
-ToolSearch({ query: "+atlassian jira_get_issue" })
+ToolSearch({ query: "select:mcp__atlassian__jira_search,mcp__atlassian__jira_get_issue" })
 ```
 
 ## Process
@@ -93,21 +92,21 @@ Show the user:
 
 **If duplicate** — add context to existing issue:
 ```
-ToolSearch({ query: "+atlassian jira_add_comment" })
+ToolSearch({ query: "select:mcp__atlassian__jira_add_comment" })
 ```
 
 Add a comment with the new occurrence context, environment details, and any additional symptoms.
 
 **If new issue** — create with full context:
 ```
-ToolSearch({ query: "+atlassian jira_create_issue" })
+ToolSearch({ query: "select:mcp__atlassian__jira_create_issue" })
 ```
 
 Include error signature, reproduction steps, and links to any related issues found during search.
 
 **If related** — create new issue and link:
 ```
-ToolSearch({ query: "+atlassian jira_create_issue_link" })
+ToolSearch({ query: "select:mcp__atlassian__jira_create_issue_link" })
 ```
 
 ## Additional Resources

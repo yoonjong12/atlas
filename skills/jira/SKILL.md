@@ -10,20 +10,16 @@ Read, search, create, edit, comment, and transition Jira issues via mcp-atlassia
 
 ## Tool Discovery
 
-MCP tools are deferred. Load required tools before first use:
+MCP tools are deferred. Load by exact name before first use:
 
 ```
-ToolSearch({ query: "+atlassian jira_get_issue" })
-ToolSearch({ query: "+atlassian jira_search" })
+ToolSearch({ query: "select:mcp__atlassian__jira_get_issue,mcp__atlassian__jira_search" })
 ```
 
 Load write tools only when needed:
 
 ```
-ToolSearch({ query: "+atlassian jira_create_issue" })
-ToolSearch({ query: "+atlassian jira_update_issue" })
-ToolSearch({ query: "+atlassian jira_add_comment" })
-ToolSearch({ query: "+atlassian jira_transition" })
+ToolSearch({ query: "select:mcp__atlassian__jira_create_issue,mcp__atlassian__jira_update_issue,mcp__atlassian__jira_add_comment,mcp__atlassian__jira_transition_issue,mcp__atlassian__jira_get_transitions" })
 ```
 
 ## Read Operations

@@ -79,7 +79,7 @@ with open('$HOME/.claude.json', 'w') as f:
 After restart, test MCP connection:
 
 ```
-ToolSearch({ query: "+atlassian jira_search" })
+ToolSearch({ query: "select:mcp__atlassian__jira_search" })
 ```
 
 Then run a test query:
