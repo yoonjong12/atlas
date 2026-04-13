@@ -17,6 +17,7 @@ Unified Atlassian access layer for Claude Code — Jira issues, Bitbucket pipeli
 | **Triage** | `/atlas:triage` | Bug duplicate detection + new issue creation |
 | **Pipeline** | `/atlas:pipeline` | Pipeline status, monitoring, failure diagnosis |
 | **PR** | `/atlas:pr` | PR details, diff, comments, reviews, description updates |
+| **Repo** | `/atlas:repo` | Clone, branches, commits, file contents, repo info |
 
 ## Prerequisites
 
