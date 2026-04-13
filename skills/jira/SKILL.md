@@ -109,10 +109,19 @@ jira_add_comment({
 
 ### Transition (Status Change)
 
+Two-step process:
+
 ```typescript
-jira_transition({
+// 1. Get available transitions
+jira_get_transitions({
+  issue_key: "WAO-372"
+})
+// Returns: [{id: 4, name: "BLOCKED"}, {id: 11, name: "해야 할 일"}, {id: 3, name: "Completed a task"}]
+
+// 2. Execute transition using ID from step 1
+jira_transition_issue({
   issue_key: "WAO-372",
-  transition_name: "진행 중"       // or "완료", "Open", etc.
+  transition_id: "3"              // ID from jira_get_transitions result
 })
 ```
 

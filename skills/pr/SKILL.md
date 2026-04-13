@@ -99,6 +99,17 @@ curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
   "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/comments"
 ```
 
+### Update PR Description
+
+```bash
+curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
+  -X PUT -H "Content-Type: application/json" \
+  -d '{"description": "Updated description in markdown"}' \
+  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}"
+```
+
+Can also update title: `{"title": "New title", "description": "New description"}`
+
 ### Approve PR
 
 ```bash

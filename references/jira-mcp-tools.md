@@ -89,12 +89,22 @@ jira_add_comment({
 })
 ```
 
-### jira_transition
+### jira_get_transitions
 
 ```typescript
-jira_transition({
+jira_get_transitions({
+  issue_key: "WAO-372"
+})
+// Returns: [{id: 4, name: "BLOCKED"}, {id: 11, name: "해야 할 일"}, {id: 3, name: "Completed a task"}]
+```
+
+### jira_transition_issue
+
+```typescript
+jira_transition_issue({
   issue_key: "WAO-372",
-  transition_name: "진행 중"     // "완료", "Open", etc.
+  transition_id: "3",            // ID from jira_get_transitions
+  comment: "Status changed"      // optional
 })
 ```
 
