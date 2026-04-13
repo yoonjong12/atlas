@@ -125,7 +125,43 @@ curl -s -o /dev/null -w "%{http_code}" \
 - `401` → Invalid credentials
 - `403` → Missing scopes
 
-### Step 5: Report Status
+### Step 5: Discover Custom Fields
+
+After Jira connectivity is verified, discover and cache custom field IDs:
+
+```bash
+curl -s -u "${JIRA_USERNAME}:${JIRA_API_TOKEN}" \
+  "${JIRA_URL}/rest/api/3/field" | python3 -c "
+import sys, json, os
+fields = json.load(sys.stdin)
+mapping = {}
+for f in fields:
+    name = f.get('name','').lower()
+    fid = f['id']
+    if 'story point' in name and f.get('custom'):
+        mapping.setdefault('story_points', fid)  # first match wins
+    if name == 'story point estimate' and f.get('custom'):
+        mapping['story_points'] = fid  # prefer 'estimate' variant
+    if 'start date' in name and f.get('custom'):
+        mapping.setdefault('start_date', fid)
+
+mapping['_source'] = '${JIRA_URL}/rest/api/3/field'
+
+os.makedirs(os.path.expanduser('~/.claude/atlas'), exist_ok=True)
+with open(os.path.expanduser('~/.claude/atlas/fields.json'), 'w') as out:
+    json.dump(mapping, out, indent=2)
+print('Discovered fields:')
+for k, v in mapping.items():
+    if not k.startswith('_'):
+        print(f'  {k}: {v}')
+"
+```
+
+If `story_points` is not found, ask the user which field their project uses.
+
+The mapping is stored at `~/.claude/atlas/fields.json` and referenced by all atlas + jira-planner skills.
+
+### Step 6: Report Status
 
 Present a summary table:
 

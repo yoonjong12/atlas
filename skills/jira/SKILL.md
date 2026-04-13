@@ -131,6 +131,25 @@ jira_create_issue_link({
 })
 ```
 
+## Custom Field Resolution
+
+Before using custom fields (story points, start date), read `~/.claude/atlas/fields.json`:
+
+```bash
+cat ~/.claude/atlas/fields.json
+```
+
+Use the resolved field ID instead of guessing. Example:
+```typescript
+// fields.json says: {"story_points": "customfield_10028"}
+jira_update_issue({
+  issue_key: "WAO-394",
+  fields: "{\"customfield_10028\": 3}"
+})
+```
+
+If the file doesn't exist, run `/atlas:setup` first.
+
 ## Token Efficiency
 
 - Request only needed fields via `fields` (comma-separated string)
