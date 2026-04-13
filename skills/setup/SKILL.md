@@ -16,7 +16,11 @@ Two credential sets are required:
 | Service | Credential | Location | Purpose |
 |---------|-----------|----------|---------|
 | Jira MCP | `JIRA_USERNAME` + `JIRA_API_TOKEN` | `~/.claude.json` → `mcpServers.atlassian` | Issue operations via mcp-atlassian |
-| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | Shell environment variables | Pipeline, PR operations via curl |
+| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | `~/.zshrc` environment variables | Pipeline, PR operations via curl |
+
+Token types (all from https://id.atlassian.net/manage-profile/security/api-tokens):
+- **Jira**: Unscoped API token (plain "API 토큰 만들기") — works with sooperset/mcp-atlassian
+- **Bitbucket**: Scoped API token → app: "Bitbucket", scopes: `read:repository:bitbucket`, `read:pullrequest:bitbucket`, `write:pullrequest:bitbucket`, `read:pipeline:bitbucket`
 
 ## Process
 
@@ -99,16 +103,14 @@ echo "BITBUCKET_API_TOKEN: ${BITBUCKET_API_TOKEN:+(set)}"
 
 If missing, guide the user:
 
-1. Go to https://bitbucket.org/account/settings/app-passwords/
-2. Create an app password with scopes:
-   - `repository:read`
-   - `pullrequest:read`
-   - `pullrequest:write`
-   - `pipeline:read`
-3. Set environment variables in shell profile:
+1. Go to https://id.atlassian.net/manage-profile/security/api-tokens
+2. Click "범위를 포함하여 API 토큰 만들기" (Create API token with scopes)
+3. Select app: **Bitbucket**
+4. Select scopes: `read:repository:bitbucket`, `read:pullrequest:bitbucket`, `write:pullrequest:bitbucket`, `read:pipeline:bitbucket`
+5. Add to `~/.zshrc`:
    ```bash
    export BITBUCKET_EMAIL="user@example.com"
-   export BITBUCKET_API_TOKEN="ATBBxxxxxxxx"
+   export BITBUCKET_API_TOKEN="ATATT3x..."
    ```
 
 ### Step 4: Verify Bitbucket Connectivity

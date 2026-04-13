@@ -1,42 +1,43 @@
-# atlassian-extended
+# atlas
 
-Unified Atlassian access layer for Claude Code — Jira issues, Bitbucket pipelines, and PR management in one plugin.
+Unified Atlassian access layer for Claude Code — Jira issues, Bitbucket pipelines, and PR management.
 
 ## Quick Start
 
 ```
-/atlassian-extended:setup
+/atlas:setup
 ```
 
 ## Skills
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| **Setup** | `/setup` | Configure Bitbucket + Jira credentials |
-| **Jira** | `/jira` | Issue CRUD, search, comments, transitions |
-| **Triage** | `/triage` | Bug duplicate detection + new issue creation |
-| **Pipeline** | `/pipeline` | Pipeline status, monitoring, failure diagnosis |
-| **PR** | `/pr` | PR details, diff, comments, reviews |
+| **Setup** | `/atlas:setup` | Configure Jira + Bitbucket credentials and verify connectivity |
+| **Jira** | `/atlas:jira` | Issue CRUD, JQL search, comments, transitions, links |
+| **Triage** | `/atlas:triage` | Bug duplicate detection + new issue creation |
+| **Pipeline** | `/atlas:pipeline` | Pipeline status, monitoring, failure diagnosis |
+| **PR** | `/atlas:pr` | PR details, diff, comments, reviews, description updates |
 
 ## Prerequisites
 
-### Bitbucket REST API
+| Service | Token Type | Scopes |
+|---------|-----------|--------|
+| Jira | Unscoped API token | None (plain token works) |
+| Bitbucket | Scoped API token (app: Bitbucket) | `read:repository`, `read:pullrequest`, `write:pullrequest`, `read:pipeline` |
 
-- `BITBUCKET_EMAIL` — Atlassian account email
-- `BITBUCKET_API_TOKEN` — App password with `repository:read`, `pullrequest:read`, `pullrequest:write`, `pipeline:read` scopes
-
-Create at: https://bitbucket.org/account/settings/app-passwords/
-
-### Jira MCP
-
-OAuth authentication via Atlassian MCP server. Authenticated on first use.
+All tokens from: https://id.atlassian.net/manage-profile/security/api-tokens
 
 ## Install
 
 ```
-/plugin marketplace add yoonjong12/atlassian-extended
-/plugin install atlassian-extended@atlassian-extended
+/plugin marketplace add yoonjong12/atlas
+/plugin install atlas@atlas
 ```
+
+## Architecture
+
+- **Jira**: `sooperset/mcp-atlassian` local MCP server (no cloudId, fast)
+- **Bitbucket**: Direct REST API via curl (PR description updates, pipeline logs)
 
 ## References
 
