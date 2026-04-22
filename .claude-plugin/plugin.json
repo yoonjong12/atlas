@@ -1,7 +1,7 @@
 {
   "name": "atlas",
-  "version": "0.2.2",
-  "description": "Unified Atlassian access layer — Jira issues, Bitbucket pipelines, and PR management in one plugin.",
+  "version": "0.3.0",
+  "description": "Unified Atlassian access layer \u2014 Jira issues, Bitbucket pipelines, and PR management in one plugin.",
   "author": {
     "name": "yoonjong12",
     "url": "https://github.com/yoonjong12"
