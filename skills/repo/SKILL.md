@@ -112,11 +112,28 @@ curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
 
 ### Clone Repository
 
+Three auth methods — pick based on what's configured:
+
+**(a) SSH** (preferred when SSH key registered with Bitbucket):
 ```bash
 git clone git@bitbucket.org:${WORKSPACE}/${REPO_SLUG}.git
-# or HTTPS:
-git clone https://bitbucket.org/${WORKSPACE}/${REPO_SLUG}.git
 ```
+
+**(b) HTTPS with Atlassian API token** (ATATT format — what `atlas:setup` issues):
+```bash
+# NOTE: ATATT tokens require `x-bitbucket-api-token-auth` as the username —
+# NOT `x-token-auth` (that's for Bitbucket's older Repository Access Tokens).
+git clone "https://x-bitbucket-api-token-auth:${BITBUCKET_API_TOKEN}@bitbucket.org/${WORKSPACE}/${REPO_SLUG}.git"
+```
+
+**(c) HTTPS with legacy app password** (older creds, still works):
+```bash
+git clone "https://${BITBUCKET_EMAIL}:${APP_PASSWORD}@bitbucket.org/${WORKSPACE}/${REPO_SLUG}.git"
+```
+
+**Specific branch**: add `-b <branch>` before the URL, e.g. `git clone -b release/internal <url>`.
+
+**Common failure**: `fatal: Authentication failed` when using `x-token-auth:<ATATT-token>` → wrong user prefix. Switch to `x-bitbucket-api-token-auth`. After a successful HTTPS clone with token-in-URL, the token is persisted in `.git/config` — rewrite the remote (`git remote set-url origin https://bitbucket.org/${WORKSPACE}/${REPO_SLUG}.git`) and rely on a credential helper if you don't want the token on disk.
 
 ### Create Branch (via API)
 
