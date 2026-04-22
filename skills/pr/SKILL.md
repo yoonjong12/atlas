@@ -7,142 +7,37 @@ allowed-tools: Bash, Read
 
 # PR — Bitbucket Pull Request Access
 
-View PR details, diffs, comments, and reviews. Post comments on PRs.
+All operations are wrapped in `${CLAUDE_PLUGIN_ROOT}/scripts/bb_pr.sh`. Invoke subcommands instead of writing curl. Repo (workspace/slug) is auto-detected from `git remote get-url origin`; override with `WORKSPACE=… REPO_SLUG=…` env.
 
 ## Prerequisites
 
-Requires `BITBUCKET_EMAIL` and `BITBUCKET_API_TOKEN` environment variables. If not set, direct the user to run `/atlassian-extended:setup`.
+`BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` in env. If missing, run `/atlas:setup`.
 
-## Repo Detection
+## Subcommands
 
-Extract workspace and repo slug from git remote:
+| Call | Purpose |
+|------|---------|
+| `bb_pr.sh get <pr_id>` | PR details (title/state/branches/dates/URL/description) |
+| `bb_pr.sh diff <pr_id>` | unified diff |
+| `bb_pr.sh comments <pr_id>` | all comments, grouped: General + Inline per file |
+| `bb_pr.sh activity <pr_id>` | approvals / updates / comment activity |
+| `bb_pr.sh list [state]` | list PRs (default `OPEN`; also `MERGED`, `DECLINED`, `SUPERSEDED`) |
+| `bb_pr.sh find-by-branch [branch]` | open PR for branch (default: current) |
+| `bb_pr.sh comment <pr_id> <body>` | post general comment (body in markdown) |
+| `bb_pr.sh inline <pr_id> <path> <line> <body>` | post inline comment on `path:line` |
+| `bb_pr.sh update <pr_id> title\|description <value>` | update title or description |
+| `bb_pr.sh approve <pr_id>` | approve PR |
 
-```bash
-REMOTE_URL=$(git remote get-url origin)
-WORKSPACE=$(echo "$REMOTE_URL" | sed -E 's#.*bitbucket.org[:/]([^/]+)/.*#\1#')
-REPO_SLUG=$(echo "$REMOTE_URL" | sed -E 's#.*bitbucket.org[:/][^/]+/([^.]+).*#\1#')
-```
+## Input Handling
 
-## Read Operations
+If user provides a URL (`https://bitbucket.org/<ws>/<repo>/pull-requests/60`), extract `60` and pass as `<pr_id>`.
 
-### PR Details
+If user omits PR ID, first try `bb_pr.sh find-by-branch` using the current branch.
 
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}"
-```
+## Output Handling
 
-Present: title, author, source → destination branch, state, created/updated dates.
+Scripts print structured, concise output. Present it as-is for read ops. For `diff`, summarize changed files and key modifications rather than dumping raw diff.
 
-### PR Diff
+## Escalation
 
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/diff"
-```
-
-Returns unified diff format. Summarize changed files and key modifications.
-
-### PR Comments
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/comments?pagelen=100"
-```
-
-For each comment, extract `.content.raw`, `.user.display_name`, `.created_on`.
-For inline comments, also extract `.inline.path`, `.inline.from`, `.inline.to`.
-
-Present comments grouped by:
-1. General comments (no `.inline` field)
-2. Inline comments (grouped by file path)
-
-### PR Activity / Reviews
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/activity?pagelen=50"
-```
-
-Activity types in response:
-- `.approval` — who approved and when
-- `.update` — state changes (open, merged, declined)
-- `.comment` — comment activity
-
-### List PRs
-
-```bash
-# Open PRs
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests?state=OPEN&pagelen=10"
-```
-
-States: `OPEN`, `MERGED`, `DECLINED`, `SUPERSEDED`
-
-## Write Operations
-
-### Post General Comment
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  -X POST -H "Content-Type: application/json" \
-  -d '{"content": {"raw": "Comment text in markdown"}}' \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/comments"
-```
-
-### Post Inline Comment
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  -X POST -H "Content-Type: application/json" \
-  -d '{"content": {"raw": "Comment on this line"}, "inline": {"path": "src/main.py", "to": 42}}' \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/comments"
-```
-
-### Update PR Description
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  -X PUT -H "Content-Type: application/json" \
-  -d '{"description": "Updated description in markdown"}' \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}"
-```
-
-Can also update title: `{"title": "New title", "description": "New description"}`
-
-### Approve PR
-
-```bash
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  -X POST \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests/${PR_ID}/approve"
-```
-
-## PR Number Detection
-
-If the user provides a Bitbucket URL instead of a PR number, extract the PR ID:
-
-```
-https://bitbucket.org/workspace/repo/pull-requests/123 → PR_ID=123
-```
-
-If no PR number is given, check the current branch:
-
-```bash
-BRANCH=$(git branch --show-current)
-# Search for open PRs from this branch
-curl -s -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/pullrequests?state=OPEN" \
-  | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-branch = '${BRANCH}'
-for pr in data.get('values', []):
-    if pr['source']['branch']['name'] == branch:
-        print(f\"PR #{pr['id']}: {pr['title']}\")
-"
-```
-
-## Additional Resources
-
-- **`references/bitbucket-api.md`** — Full Bitbucket REST API endpoint reference
+For edge cases not covered by subcommands (unusual filters, paginated bulk ops), fall back to direct `curl` against `https://api.bitbucket.org/2.0/repositories/${WORKSPACE}/${REPO_SLUG}/…` — see `references/bitbucket-api.md` for endpoints.

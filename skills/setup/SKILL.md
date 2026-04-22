@@ -116,10 +116,10 @@ If missing, guide the user:
 ### Step 4: Verify Bitbucket Connectivity
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}" \
-  -u "${BITBUCKET_EMAIL}:${BITBUCKET_API_TOKEN}" \
-  "https://api.bitbucket.org/2.0/user"
+${CLAUDE_PLUGIN_ROOT}/scripts/bb_auth.sh
 ```
+
+Emits `OK: Bitbucket connected as <email>` on success. Failure modes:
 
 - `200` → Connected
 - `401` → Invalid credentials
