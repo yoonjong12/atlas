@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Sync Bitbucket-hosted Claude Code plugins from remote to local.
+# Sync Claude Code plugins from remote to local.
+# Scans ~/.claude/plugins/marketplaces/ — the single source of truth for plugin clones.
 # Usage: bb_plugin_sync.sh <subcommand> [args]
 
 set -euo pipefail
@@ -7,44 +8,29 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/_lib.sh"
 
-SEARCH_DIRS=(
-  "${HOME}/.local/share"
-  "${HOME}/.claude/plugins/marketplaces"
-)
-
-_is_bitbucket_remote() {
-  local dir="$1"
-  git -C "$dir" remote get-url origin 2>/dev/null | grep -q "bitbucket.org"
-}
+MARKETPLACE_DIR="${HOME}/.claude/plugins/marketplaces"
 
 _find_plugin_clones() {
   local filter="${1:-}"
-  for base in "${SEARCH_DIRS[@]}"; do
-    [[ -d "$base" ]] || continue
-    for dir in "$base"/*/; do
-      [[ -d "$dir/.git" ]] || continue
-      _is_bitbucket_remote "$dir" || continue
-      local name
-      name=$(basename "$dir")
-      if [[ -z "$filter" || "$name" == *"$filter"* ]]; then
-        local remote version=""
-        remote=$(git -C "$dir" remote get-url origin 2>/dev/null)
-        if [[ -f "$dir/.claude-plugin/plugin.json" ]]; then
-          version=$(_py "import json; print(json.load(open('$dir/.claude-plugin/plugin.json'))['version'])" 2>/dev/null || echo "?")
-        elif [[ -d "$dir/.claude-plugin" ]]; then
-          local pj
-          pj=$(find "$dir" -name "plugin.json" -path "*/.claude-plugin/*" -maxdepth 3 2>/dev/null | head -1)
-          [[ -n "$pj" ]] && version=$(_py "import json; print(json.load(open('$pj'))['version'])" 2>/dev/null || echo "?")
-        fi
-        local head_info
-        head_info=$(git -C "$dir" log --oneline -1 2>/dev/null || echo "?")
-        echo "PATH: $dir"
-        echo "  REMOTE: $remote"
-        echo "  VERSION: ${version:-unknown}"
-        echo "  HEAD: $head_info"
-        echo ""
-      fi
-    done
+  [[ -d "$MARKETPLACE_DIR" ]] || _die "marketplace dir not found: $MARKETPLACE_DIR"
+  for dir in "$MARKETPLACE_DIR"/*/; do
+    [[ -d "$dir/.git" ]] || continue
+    local name
+    name=$(basename "$dir")
+    if [[ -z "$filter" || "$name" == *"$filter"* ]]; then
+      local remote version=""
+      remote=$(git -C "$dir" remote get-url origin 2>/dev/null || echo "?")
+      local pj
+      pj=$(find "$dir" -name "plugin.json" -path "*/.claude-plugin/*" -maxdepth 3 2>/dev/null | head -1)
+      [[ -n "$pj" ]] && version=$(_py "import json; print(json.load(open('$pj'))['version'])" 2>/dev/null || echo "?")
+      local head_info
+      head_info=$(git -C "$dir" log --oneline -1 2>/dev/null || echo "?")
+      echo "PATH: $dir"
+      echo "  REMOTE: $remote"
+      echo "  VERSION: ${version:-unknown}"
+      echo "  HEAD: $head_info"
+      echo ""
+    fi
   done
 }
 
@@ -53,7 +39,6 @@ _sync() {
   local branch="${2:-main}"
 
   [[ -d "$clone_path/.git" ]] || _die "not a git repo: $clone_path"
-  _is_bitbucket_remote "$clone_path" || _die "not a Bitbucket remote: $clone_path"
 
   echo "=== Fetching from remote ==="
   git -C "$clone_path" fetch --all --tags 2>&1
@@ -125,23 +110,20 @@ _all() {
   local filter="${1:-}"
   local branch="${2:-main}"
 
-  echo "=== Scanning for Bitbucket-hosted plugins ==="
+  echo "=== Scanning plugin marketplaces ==="
   echo ""
 
-  for base in "${SEARCH_DIRS[@]}"; do
-    [[ -d "$base" ]] || continue
-    for dir in "$base"/*/; do
-      [[ -d "$dir/.git" ]] || continue
-      _is_bitbucket_remote "$dir" || continue
-      local name
-      name=$(basename "$dir")
-      if [[ -z "$filter" || "$name" == *"$filter"* ]]; then
-        echo ">>> $name ($dir)"
-        _sync "$dir" "$branch"
-        _verify "$dir"
-        echo ""
-      fi
-    done
+  [[ -d "$MARKETPLACE_DIR" ]] || _die "marketplace dir not found: $MARKETPLACE_DIR"
+  for dir in "$MARKETPLACE_DIR"/*/; do
+    [[ -d "$dir/.git" ]] || continue
+    local name
+    name=$(basename "$dir")
+    if [[ -z "$filter" || "$name" == *"$filter"* ]]; then
+      echo ">>> $name ($dir)"
+      _sync "$dir" "$branch"
+      _verify "$dir"
+      echo ""
+    fi
   done
 }
 
@@ -151,7 +133,7 @@ case "${1:-}" in
   verify)  _verify "${2:?clone-path required}" ;;
   all)     _all "${2:-}" "${3:-main}" ;;
   *)       _usage "$0" \
-             "locate [filter]         — find Bitbucket plugin clones" \
+             "locate [filter]         — find plugin clones in marketplaces/" \
              "sync <path> [branch]    — pull latest + refresh cache" \
              "verify <path>           — compare local vs remote" \
              "all [filter] [branch]   — locate+sync+verify all" ;;

@@ -1,47 +1,40 @@
 ---
 name: plugin-sync
-description: "Sync a Bitbucket-hosted Claude Code plugin from remote to local. Pull latest, refresh cache, verify. Trigger on: 'plugin sync', 'plugin update', '플러그인 싱크', '플러그인 업데이트', 'sync plugin', 'pull plugin', '플러그인 최신화'"
-argument-hint: "[plugin-name or local-clone-path]"
+description: "Sync Claude Code plugins from remote to local. Pull latest from ~/.claude/plugins/marketplaces/, refresh cache, verify. Git-host agnostic. Trigger on: 'plugin sync', 'plugin update', '플러그인 싱크', '플러그인 업데이트', 'sync plugin', 'pull plugin', '플러그인 최신화'"
+argument-hint: "[plugin-name or marketplace-clone-path]"
 allowed-tools: Bash, Read
 ---
 
-# Plugin Sync — Bitbucket-hosted Claude Code plugins
+# Plugin Sync — Claude Code plugin marketplace sync
 
-Pull latest code from a Bitbucket remote into the local plugin clone, refresh the Claude Code plugin cache, and verify all layers match.
+Pull latest from remote into `~/.claude/plugins/marketplaces/<name>/`, refresh Claude Code plugin cache, verify.
 
-## Prerequisites
-
-Git SSH or HTTPS access to the Bitbucket remote. Plugin already installed via `claude plugin marketplace add` + `claude plugin install`.
+Single source of truth: `~/.claude/plugins/marketplaces/`. Git-host agnostic (GitHub, Bitbucket, any git remote).
 
 ## Steps
 
-1. **Locate clone.** Find the local plugin clone:
+1. **Locate.** List all plugin clones:
    ```bash
-   bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh locate [plugin-name]
+   bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh locate [filter]
    ```
-   Searches `~/.local/share/` and `~/.claude/plugins/marketplaces/` for repos with Bitbucket remotes.
 
-2. **Sync.** Pull latest and refresh cache:
+2. **Sync.** Pull latest + refresh cache:
    ```bash
    bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh sync <clone-path> [branch]
    ```
-   Default branch: `main`. Detects if HEAD is detached (tag checkout) and handles accordingly.
 
 3. **Verify.** Compare local vs remote:
    ```bash
    bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh verify <clone-path>
    ```
 
-## One-shot
+## One-shot (all plugins)
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh all [plugin-name] [branch]
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/bb_plugin_sync.sh all [filter] [branch]
 ```
-
-Runs locate → sync → verify in sequence.
 
 ## Notes
 
 - Opposite of `/publish` (outbound push). This is inbound pull.
-- For GitHub-hosted plugins, use `claude plugin update` directly.
 - After sync, tell user to run `/reload-plugins` if session is active.
