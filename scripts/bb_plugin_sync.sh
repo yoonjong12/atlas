@@ -60,18 +60,29 @@ _sync() {
 
   echo ""
   echo "=== Refreshing Claude Code plugin cache ==="
-  local plugin_name=""
+  local plugin_name="" marketplace_name=""
   local pj
   pj=$(find "$clone_path" -name "plugin.json" -path "*/.claude-plugin/*" -maxdepth 3 2>/dev/null | head -1)
   if [[ -n "$pj" ]]; then
     plugin_name=$(_py "import json; print(json.load(open('$pj'))['name'])" 2>/dev/null || echo "")
   fi
 
-  if [[ -n "$plugin_name" ]]; then
-    echo "Plugin: $plugin_name"
-    claude plugin update "${plugin_name}" 2>&1 || echo "(plugin update returned non-zero — cache may already be current)"
+  # Derive marketplace name from path: .../marketplaces/<marketplace>/
+  local real_path
+  real_path=$(cd "$clone_path" && pwd -P)
+  if [[ "$real_path" == */marketplaces/* ]]; then
+    marketplace_name=$(echo "$real_path" | sed -E 's#.*/marketplaces/([^/]+).*#\1#')
+  fi
+
+  if [[ -n "$plugin_name" && -n "$marketplace_name" ]]; then
+    local plugin_id="${plugin_name}@${marketplace_name}"
+    echo "Plugin: $plugin_id"
+    claude plugin update "$plugin_id" 2>&1 || echo "(plugin update returned non-zero — cache may already be current)"
+  elif [[ -n "$plugin_name" ]]; then
+    echo "Plugin: $plugin_name (marketplace unknown)"
+    claude plugin update "$plugin_name" 2>&1 || echo "(plugin update returned non-zero — cache may already be current)"
   else
-    echo "WARN: could not detect plugin name. Run 'claude plugin update <name>' manually."
+    echo "WARN: could not detect plugin name. Run 'claude plugin update <name>@<marketplace>' manually."
   fi
 }
 
