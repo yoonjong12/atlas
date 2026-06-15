@@ -23,6 +23,7 @@ Prefer `${CLAUDE_PLUGIN_ROOT}/scripts/bb_pr.sh` for supported operations. It aut
 - Use `@file` for long markdown descriptions, review replies, and merge messages.
 - Summarize large diffs instead of pasting raw diff unless the user asks for exact output.
 - Do not merge when there are unresolved review concerns, failing checks, or unclear target branch unless the user explicitly confirms.
+- Follow `references/pr-conventions.md` for PR description structure and review reply format.
 
 ## Common Workflows
 
@@ -64,6 +65,15 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/bb_pr.sh inline <pr_id> path/to/file.py 42 @/tmp/i
 ```
 
 Before replying, read `comments` and `activity` so the response matches the actual review thread.
+
+**`bb_pr.sh comment` posts a general comment — NOT a thread reply.**
+To reply inside a reviewer's comment thread, use the Bitbucket API directly with `"parent": {"id": <comment_id>}`. See `references/bitbucket-api.md` → "Reply to Comment Thread" and `references/pr-conventions.md` → "Review Reply Convention" for the full workflow.
+
+Steps to post a thread reply:
+1. `bb_pr.sh comments <pr_id>` — find the parent comment ID (`.id` field of the reviewer's comment)
+2. Write reply body to `/tmp/reply.md` following the `### Request N` format in `pr-conventions.md`
+3. Post via raw API with `{"content": {"raw": "..."}, "parent": {"id": <id>}}`
+4. Verify the reply appears nested under the reviewer's comment, not as a standalone comment
 
 ### Approve or Merge
 
