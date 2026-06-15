@@ -71,7 +71,7 @@ To reply inside a reviewer's comment thread, use the Bitbucket API directly with
 
 Steps to post a thread reply:
 1. `bb_pr.sh comments <pr_id>` — find the parent comment ID (`.id` field of the reviewer's comment)
-2. Write reply body to `/tmp/reply.md` following the `### Request N` format in `pr-conventions.md`
+2. Write reply body to `/tmp/reply.md` following the "Review Reply Convention" in `pr-conventions.md` (lead tally + `### Important N: … — Fixed/Follow-up` blocks, mirroring the reviewer's severity label)
 3. Post via raw API with `{"content": {"raw": "..."}, "parent": {"id": <id>}}`
 4. Verify the reply appears nested under the reviewer's comment, not as a standalone comment
 

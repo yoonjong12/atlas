@@ -65,16 +65,18 @@ Match the visualization to what actually changed:
 
 ### Reply format
 
+Lead with a one-line acknowledgment + tally, then one block per finding.
+
 ```markdown
-### Request 1: <short title> — Fixed
+Thank you for the review. <N> fixed, <M> follow-up.
 
-**Before**
-```python
-# old code
+### Important 1: <short title> — Fixed
+
 ```
+Before:
+# old code
 
-**After**
-```python
+After:
 # new code
 ```
 
@@ -82,17 +84,24 @@ One sentence explaining what changed and why.
 
 ---
 
-### Request 2: <short title> — Deferred
+### Important 2: <short title> — Follow-up (next PR)
 
-One sentence on why this is deferred and what ticket/PR will address it.
+Agreed — out of this PR's scope. Registered in <doc/ticket>:
+- <one bullet per planned step>
 ```
 
 Rules:
-- `### Request N: Title — Fixed` or `— Deferred` or `— Disagree (reason)`
-- Before/After code blocks for Fixed items where code changed
-- One sentence per request — no multi-paragraph explanations
-- Writing style: caveman (concise, no filler), sentences ≤ ~10 words each
-- If multiple requests from one reviewer, batch into a single reply
+- **Mirror the reviewer's own severity label** in the header — `### Important N`, `### Nit N`. Don't invent a generic word like "Request".
+- Status suffix: `— Fixed`, `— Follow-up (next PR)`, `— Deferred`, or `— Disagree (reason)`.
+- `### Additional: <title> — Fixed` for a fix you found yourself, outside the reviewer's list.
+- Before/After block for every Fixed item where code changed — one fenced block, `Before:` / `After:` labels inside it.
+- One sentence per Fixed item; a short bullet plan is fine for a Follow-up.
+- Batch all of one reviewer's findings into a single reply.
+- Writing style: caveman (concise, no filler), sentences ≤ ~10 words each.
+
+### Re-review loop
+
+A reviewer may re-review and raise new findings. Reply to each round in the same format — a fresh `### Important N` block per new finding, with its own lead tally — until they signal APPROVE.
 
 ### Posting the reply (raw API)
 
