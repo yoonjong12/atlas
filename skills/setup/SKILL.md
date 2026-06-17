@@ -11,75 +11,43 @@ Configure credentials for Bitbucket REST API and Jira MCP access, then verify co
 
 ## Prerequisites
 
-Two credential sets are required:
+The atlas plugin bundles `mcp-atlassian` (Jira only, 9 tools). Credentials are passed via shell environment variables.
 
 | Service | Credential | Location | Purpose |
 |---------|-----------|----------|---------|
-| Jira MCP | `JIRA_USERNAME` + `JIRA_API_TOKEN` | `~/.claude.json` → `mcpServers.atlassian` | Issue operations via mcp-atlassian |
-| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | `~/.zshrc` environment variables | Pipeline, PR operations via curl |
+| Jira MCP | `JIRA_URL` + `JIRA_USERNAME` + `JIRA_API_TOKEN` | `~/.zshrc` | Issue operations via mcp-atlassian |
+| Bitbucket REST API | `BITBUCKET_EMAIL` + `BITBUCKET_API_TOKEN` | `~/.zshrc` | Pipeline, PR operations via curl |
 
 Token types (all from https://id.atlassian.net/manage-profile/security/api-tokens):
-- **Jira**: Unscoped API token (plain "API 토큰 만들기") — works with sooperset/mcp-atlassian
+- **Jira**: Unscoped API token (plain "API 토큰 만들기") — works with mcp-atlassian
 - **Bitbucket**: Scoped API token → app: "Bitbucket", scopes: `read:repository:bitbucket`, `read:pullrequest:bitbucket`, `write:pullrequest:bitbucket`, `read:pipeline:bitbucket`
 
 ## Process
 
-### Step 1: Check Jira MCP
-
-Verify `~/.claude.json` has the atlassian MCP server configured:
+### Step 1: Check Jira credentials
 
 ```bash
-python3 -c "
-import json
-with open('$HOME/.claude.json') as f:
-    d = json.load(f)
-mcp = d.get('mcpServers', {}).get('atlassian', {})
-if mcp:
-    env = mcp.get('env', {})
-    print(f'JIRA_URL: {env.get(\"JIRA_URL\", \"(not set)\")}')
-    print(f'JIRA_USERNAME: {env.get(\"JIRA_USERNAME\", \"(not set)\")}')
-    print(f'JIRA_API_TOKEN: {\"(set)\" if env.get(\"JIRA_API_TOKEN\") else \"(not set)\"}')
-else:
-    print('atlassian MCP server not configured')
-"
+echo "JIRA_URL: ${JIRA_URL:-(not set)}"
+echo "JIRA_USERNAME: ${JIRA_USERNAME:-(not set)}"
+echo "JIRA_API_TOKEN: ${JIRA_API_TOKEN:+(set)}${JIRA_API_TOKEN:-(not set)}"
 ```
 
-If missing, guide the user:
-
-1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
-2. Create an API token
-3. Agent writes the config to `~/.claude.json`:
+If missing, guide the user to add to `~/.zshrc`:
 
 ```bash
-python3 -c "
-import json
-with open('$HOME/.claude.json') as f:
-    d = json.load(f)
-d.setdefault('mcpServers', {})['atlassian'] = {
-    'command': 'uvx',
-    'args': ['mcp-atlassian'],
-    'env': {
-        'JIRA_URL': 'https://mindai.atlassian.net',
-        'JIRA_USERNAME': '<email>',
-        'JIRA_API_TOKEN': '<token>',
-        'CONFLUENCE_URL': 'https://mindai.atlassian.net/wiki',
-        'CONFLUENCE_USERNAME': '<email>',
-        'CONFLUENCE_API_TOKEN': '<token>'
-    }
-}
-with open('$HOME/.claude.json', 'w') as f:
-    json.dump(d, f, indent=2)
-"
+export JIRA_URL="https://your-domain.atlassian.net"
+export JIRA_USERNAME="user@example.com"
+export JIRA_API_TOKEN="ATATT3x..."
 ```
 
-4. Restart Claude Code (`/exit` then relaunch)
+Then: `source ~/.zshrc` and restart Claude Code (`/exit` then relaunch).
 
 ### Step 2: Verify Jira Connectivity
 
 After restart, test MCP connection:
 
 ```
-ToolSearch({ query: "select:mcp__atlassian__jira_search" })
+ToolSearch({ query: "select:mcp__plugin_atlas_atlassian__jira_search" })
 ```
 
 Then run a test query:
