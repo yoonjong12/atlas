@@ -1,6 +1,6 @@
 ---
 name: repo
-description: "Bitbucket repository operations — clone, info, branches, commits, file contents. This skill should be used when the user asks to 'clone a repo', 'list branches', 'show commits', 'view repo info', 'get file from bitbucket', or references a Bitbucket repository. Trigger on: 'repo', 'clone', 'branch', 'branches', '브랜치', '레포', '클론', 'repo info', 'commits', 'bitbucket repo', '레포 정보'"
+description: "Bitbucket repo: clone/branches/commits/files. Trigger: 'repo', 'clone', 'branch', '레포', '브랜치', '클론'"
 argument-hint: "<repo slug, branch name, or Bitbucket URL>"
 allowed-tools: Bash, Read
 ---

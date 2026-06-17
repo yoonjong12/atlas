@@ -1,6 +1,6 @@
 ---
 name: pipeline
-description: "Check Bitbucket Cloud pipeline status, wait for completion, and diagnose failures. This skill should be used when the user asks about CI/CD status, pipeline results, build failures, or after pushing code. Trigger on: 'pipeline', 'pipeline status', 'CI', 'build status', '파이프라인', '파이프라인 확인', 'check pipeline', 'build failed', '빌드 확인', 'CI 결과'"
+description: "Bitbucket CI: status/wait/diagnose. Trigger: 'pipeline', 'CI', 'build', '파이프라인', 'build failed', 'CI 결과'"
 argument-hint: ""
 allowed-tools: Bash, Read
 ---

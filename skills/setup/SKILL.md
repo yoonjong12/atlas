@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "This skill should be used when the user needs to configure Atlassian credentials, connect to Bitbucket or Jira for the first time, or troubleshoot authentication issues. Trigger on: 'setup', 'configure atlassian', 'set up bitbucket', 'set up jira', 'atlassian 설정', '빗버킷 설정', '지라 설정', 'connect atlassian', 'credentials not working', 'authentication failed', '인증 실패'"
+description: "Configure Atlassian credentials. Trigger: 'atlas setup', 'configure atlassian', '설정', 'auth failed', '인증 실패'"
 argument-hint: ""
 allowed-tools: Bash, Read, ToolSearch, AskUserQuestion
 ---

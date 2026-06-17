@@ -1,6 +1,6 @@
 ---
 name: jira
-description: "Access Jira issues — read, search, create, edit, comment, and transition. This skill should be used when the user asks to 'check an issue', 'look up a story', 'create a subtask', 'search jira', 'add a comment', 'change status', 'transition issue', or references a Jira issue key (e.g., WAO-372). Trigger on: '이슈 확인', '스토리 확인', '서브태스크', '이슈 만들어', '코멘트', '상태 변경', 'JQL', 'jira search'"
+description: "Jira: read/search/create/edit/comment/transition. Trigger: issue key (e.g. WAO-123), '이슈', '스토리', '서브태스크', 'JQL', '상태변경', 'jira search'"
 argument-hint: "<issue key, JQL query, or description>"
 ---
 

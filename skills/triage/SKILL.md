@@ -1,6 +1,6 @@
 ---
 name: triage
-description: "Triage bug reports by searching Jira for duplicates and deciding whether to create a new issue or update an existing one. This skill should be used when the user reports a bug, asks 'is this a known issue', wants to check for duplicates, or needs to file a bug. Trigger on: 'triage', 'bug report', 'duplicate check', '버그 트리아지', '중복 확인', '버그 리포트', 'known issue', '이 에러 알려진 거야'"
+description: "Bug triage: search Jira duplicates, create/skip. Trigger: 'triage', 'bug report', 'duplicate', '버그 트리아지', 'known issue'"
 argument-hint: "<bug report, error message, or symptom description>"
 ---
 

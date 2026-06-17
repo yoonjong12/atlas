@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Access Bitbucket Cloud pull requests — view details, diffs, comments, reviews, post comments, and approve. This skill should be used when the user asks about a PR, wants to read PR comments or reviews, check a PR diff, post a comment, or approve a PR. Trigger on: 'PR', 'pull request', 'PR comments', 'review', 'PR 확인', 'PR 코멘트', '리뷰 확인', 'PR diff', '풀리퀘스트', 'PR에 코멘트 달아', 'approve PR', '승인'"
+description: "Bitbucket PR: view/diff/comment/approve. Trigger: 'PR', 'pull request', 'PR 확인', '승인', 'approve PR', 'PR 코멘트'"
 argument-hint: "<PR number or URL>"
 allowed-tools: Bash, Read
 ---
