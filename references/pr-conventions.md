@@ -28,9 +28,20 @@ WAO-XXX LYZ: short description
 
 ### Writing style
 
-- Sentences: concise, naturally flowing. Not choppy short fragments strung together.
-- Changes section: table format, caveman compact (drop articles, short synonyms).
-- No internal ticket codes, section symbols (§), or jargon in output visible to reviewers.
+Write like an engineer explaining the change to a colleague. Not like an AI summarizing it.
+
+- Lead with the point. Conclusion first, evidence after.
+- Compact means cut, not chop. Trim a sentence to its core idea. Do not split one long sentence into a stack of mechanical fragments — that reads worse, not better. One dense sentence beats five clipped ones.
+- Plain verbs. "is", "has", "drops" — not "serves as", "leverages", "enables", "facilitates".
+- Vary the rhythm. Mix short and long sentences. Uniform same-length lines are the clearest tell of machine text.
+- Be specific. Name the function, the number, the file. Not "various components" or "significantly improved".
+- Changes section stays a table, caveman compact (drop articles, short synonyms).
+- Strip the AI tells: em-dash and arrow spam, hedges ("it's worth noting", "notably"), infomercial hooks ("The catch?", "Here's the thing"), inflated transitions ("Moreover", "Furthermore"), Title-Case Headings, and bullet lists of bare noun phrases.
+- No internal ticket codes, section symbols (§), or jargon visible to reviewers.
+
+Keep only what the reviewer needs: the bug in one paragraph, then the one non-obvious gotcha in one paragraph. Internal rationale for why the fix is cheap or correct is not PR-worthy, so cut it. Abstract the mechanism, keep the impact number.
+
+Reference: read `references/avoid-ai-writing.md`, the full catalog of AI-writing patterns to detect and delete (vendored verbatim, MIT, Conor Bronsdon).
 
 ### ASIS → TOBE visualization
 
@@ -97,7 +108,7 @@ Rules:
 - Before/After block for every Fixed item where code changed — one fenced block, `Before:` / `After:` labels inside it.
 - One sentence per Fixed item; a short bullet plan is fine for a Follow-up.
 - Batch all of one reviewer's findings into a single reply.
-- Writing style: caveman (concise, no filler), sentences ≤ ~10 words each.
+- Writing style: caveman, no filler. "≤10 words" means compress each point to its essence — capture the core and cut the rest, not chop a long sentence into fragments at every comma.
 
 ### Re-review loop
 
